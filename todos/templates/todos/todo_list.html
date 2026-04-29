@@ -1,0 +1,384 @@
+{% extends 'todos/base.html' %}
+{% block title %}My Enhanced Todo List{% endblock %}
+{% block extra_css %}
+<style>
+ .todo-item {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 20px;
+ border-radius: 15px;
+ margin-bottom: 15px;
+ background: rgba(31, 41, 55, 0.9);
+ border: 2px solid transparent;
+ transition: all 0.3s ease;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+ position: relative;
+ overflow: hidden;
+ }
+
+ .todo-item::before {
+ content: '';
+ position: absolute;
+ left: 0;
+ top: 0;
+ bottom: 0;
+ width: 5px;
+ background: linear-gradient(180deg, #ff6b6b, #feca57);
+ border-radius: 15px 0 0 15px;
+ }
+
+ .todo-item:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+ border-color: rgba(255, 107, 107, 0.3);
+ }
+
+ .todo-item.completed {
+ background: linear-gradient(135deg, rgba(46, 213, 115, 0.1), rgba(123, 237, 159, 0.1));
+ opacity: 0.8;
+ }
+
+ .todo-item.completed::before {
+ background: linear-gradient(180deg, #43e97b, #38f9d7);
+ }
+
+ .todo-content {
+ flex: 1;
+ cursor: pointer;
+ padding: 0 15px;
+ }
+
+ .todo-item.completed .title {
+ text-decoration: line-through;
+ color: #636e72;
+ }
+
+ .title {
+ font-weight: 700;
+ color: #e8e8e8;
+ font-size: 1.2em;
+ margin-bottom: 5px;
+ }
+
+ .description {
+ font-size: 14px;
+ color: #9ca3af;
+ margin-bottom: 8px;
+ line-height: 1.4;
+ }
+
+ .todo-meta {
+ display: flex;
+ gap: 15px;
+ align-items: center;
+ flex-wrap: wrap;
+ }
+
+ .priority-badge, .category-badge {
+ padding: 4px 12px;
+ border-radius: 20px;
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ .due-date {
+ font-size: 12px;
+ color: #9ca3af;
+ font-weight: 500;
+ }
+
+ .due-date.overdue {
+ color: #ff3838;
+ font-weight: 700;
+ }
+
+ .actions {
+ display: flex;
+ gap: 8px;
+ flex-direction: column;
+ align-items: flex-end;
+ }
+
+ .action-btn {
+ padding: 8px 16px;
+ border-radius: 25px;
+ border: none;
+ cursor: pointer;
+ font-size: 12px;
+ font-weight: 600;
+ transition: all 0.3s ease;
+ min-width: 80px;
+ }
+
+ .action-btn:hover {
+ transform: translateY(-1px);
+ box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+ }
+
+ .empty {
+ text-align: center;
+ color: #9ca3af;
+ padding: 50px 20px;
+ background: rgba(31, 41, 55, 0.8);
+ border-radius: 15px;
+ margin: 20px 0;
+ }
+
+ .empty i {
+ font-size: 3em;
+ color: #ddd;
+ margin-bottom: 15px;
+ }
+
+ .empty h3 {
+ color: #e8e8e8;
+ margin-bottom: 10px;
+ }
+
+ .search-input {
+ width: 100%;
+ padding: 15px 20px;
+ border: 2px solid #374151;
+ border-radius: 25px;
+ font-size: 16px;
+ margin-bottom: 15px;
+ background: rgba(55, 65, 81, 0.8);
+ color: #e8e8e8;
+ transition: all 0.3s ease;
+ }
+
+ .search-input:focus {
+ outline: none;
+ border-color: #ff6b6b;
+ box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+ background: rgba(55, 65, 81, 0.9);
+ }
+
+ .header-actions {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 25px;
+ flex-wrap: wrap;
+ gap: 15px;
+ }
+
+ .header-left {
+ display: flex;
+ align-items: center;
+ gap: 15px;
+ }
+
+ .add-btn {
+ background: linear-gradient(45deg, #ff6b6b, #ff9a56);
+ color: white;
+ padding: 15px 30px;
+ border-radius: 30px;
+ text-decoration: none;
+ font-weight: 700;
+ font-size: 16px;
+ transition: all 0.3s ease;
+ box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+ }
+
+ .add-btn:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+ }
+
+ .add-btn i {
+ margin-right: 8px;
+ }
+
+ @media (max-width: 768px) {
+ .todo-item {
+ flex-direction: column;
+ align-items: flex-start;
+ gap: 15px;
+ }
+
+ .actions {
+ flex-direction: row;
+ width: 100%;
+ justify-content: flex-end;
+ }
+
+ .header-actions {
+ flex-direction: column;
+ align-items: stretch;
+ }
+
+ .header-left {
+ justify-content: center;
+ }
+ }
+</style>
+{% endblock %}
+{% block content %}
+<h1><i class="fas fa-tasks"></i> My Enhanced Todo List</h1>
+
+<!-- Statistics Section -->
+<div class="stats-card">
+ <h2><i class="fas fa-chart-bar"></i> Quick Stats</h2>
+ <div class="stats-grid">
+ <div class="stat-item">
+ <div class="stat-number">{{ total_count }}</div>
+ <div class="stat-label">Total Tasks</div>
+ </div>
+ <div class="stat-item">
+ <div class="stat-number">{{ completed_count }}</div>
+ <div class="stat-label">Completed</div>
+ </div>
+ <div class="stat-item">
+ <div class="stat-number">{{ pending_count }}</div>
+ <div class="stat-label">Pending</div>
+ </div>
+ <div class="stat-item">
+ <div class="stat-number">{{ overdue_count }}</div>
+ <div class="stat-label">Overdue</div>
+ </div>
+ </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="search-filter">
+ <h2><i class="fas fa-search"></i> Search & Filter</h2>
+ <input type="text" class="search-input" placeholder="Search todos..." id="searchInput">
+ <div class="filter-buttons">
+ <button class="filter-btn active" data-filter="all">All</button>
+ <button class="filter-btn" data-filter="pending">Pending</button>
+ <button class="filter-btn" data-filter="completed">Completed</button>
+ <button class="filter-btn" data-filter="high">High Priority</button>
+ <button class="filter-btn" data-filter="overdue">Overdue</button>
+ </div>
+</div>
+
+<!-- Header Actions -->
+<div class="header-actions">
+ <div class="header-left">
+ <a href="{% url 'todo_create' %}" class="add-btn">
+ <i class="fas fa-plus"></i> Add New Todo
+ </a>
+ </div>
+</div>
+
+<!-- Todo List -->
+<div id="todoList">
+{% if todos %}
+ {% for todo in todos %}
+ <div class="todo-item {% if todo.completed %}completed{% endif %} fade-in"
+ data-priority="{{ todo.priority }}"
+ data-completed="{{ todo.completed }}"
+ data-category="{{ todo.category }}"
+ data-overdue="{% if todo.is_overdue %}true{% else %}false{% endif %}">
+ <div class="todo-content" onclick="window.location.href='{% url 'todo_edit' todo.id %}'">
+ <div class="title">
+ {% if todo.priority == 'urgent' %}<i class="fas fa-exclamation-triangle"></i>{% endif %}
+ {{ todo.title }}
+ </div>
+ {% if todo.description %}
+ <div class="description">{{ todo.description }}</div>
+ {% endif %}
+ <div class="todo-meta">
+ <span class="priority-badge priority-{{ todo.priority }}">
+ <i class="fas fa-flag"></i> {{ todo.get_priority_display }}
+ </span>
+ <span class="category-badge category-{{ todo.category }}">
+ <i class="fas fa-tag"></i> {{ todo.get_category_display }}
+ </span>
+ {% if todo.due_date %}
+ <span class="due-date {% if todo.is_overdue %}overdue{% endif %}">
+ <i class="fas fa-calendar"></i>
+ {% if todo.is_overdue %}Overdue: {% endif %}{{ todo.due_date|date:"M j, Y" }}
+ </span>
+ {% endif %}
+ </div>
+ </div>
+ <div class="actions">
+ <form method="post" action="{% url 'todo_toggle' todo.id %}">
+ {% csrf_token %}
+ <button type="submit" class="action-btn btn-success">
+ {% if todo.completed %}
+ <i class="fas fa-undo"></i> Mark Incomplete
+ {% else %}
+ <i class="fas fa-check"></i> Mark Complete
+ {% endif %}
+ </button>
+ </form>
+ <form method="post" action="{% url 'todo_delete' todo.id %}">
+ {% csrf_token %}
+ <button type="submit" class="action-btn btn-danger">
+ <i class="fas fa-trash"></i> Delete
+ </button>
+ </form>
+ </div>
+ </div>
+ {% endfor %}
+{% else %}
+ <div class="empty">
+ <i class="fas fa-clipboard-list"></i>
+ <h3>No todos yet!</h3>
+ <p>Click "Add New Todo" to create your first task and get organized.</p>
+ </div>
+{% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+ const searchInput = document.getElementById('searchInput');
+ const filterButtons = document.querySelectorAll('.filter-btn');
+ const todoItems = document.querySelectorAll('.todo-item');
+
+ // Search functionality
+ searchInput.addEventListener('input', filterTodos);
+ filterButtons.forEach(btn => btn.addEventListener('click', filterTodos));
+
+ function filterTodos() {
+ const searchTerm = searchInput.value.toLowerCase();
+ const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+
+ todoItems.forEach(item => {
+ const title = item.querySelector('.title').textContent.toLowerCase();
+ const description = item.querySelector('.description')?.textContent.toLowerCase() || '';
+ const priority = item.dataset.priority;
+ const completed = item.dataset.completed === 'True';
+ const overdue = item.dataset.overdue === 'true';
+
+ let showItem = true;
+
+ // Search filter
+ if (searchTerm && !title.includes(searchTerm) && !description.includes(searchTerm)) {
+ showItem = false;
+ }
+
+ // Category filter
+ if (activeFilter !== 'all') {
+ switch(activeFilter) {
+ case 'pending':
+ showItem = showItem && !completed;
+ break;
+ case 'completed':
+ showItem = showItem && completed;
+ break;
+ case 'high':
+ showItem = showItem && (priority === 'high' || priority === 'urgent');
+ break;
+ case 'overdue':
+ showItem = showItem && overdue;
+ break;
+ }
+ }
+
+ item.style.display = showItem ? 'flex' : 'none';
+ });
+
+ // Update active filter button
+ filterButtons.forEach(btn => btn.classList.remove('active'));
+ event.target?.classList.add('active');
+ }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'todos/base.html' %}
+{% block title %}{% if form.instance.pk %}Edit Todo{% else %}Create New Todo{% endif %}{% endblock %}
+{% block extra_css %}
+<style>
+ .form-card {
+ background: rgba(31, 41, 55, 0.95);
+ border-radius: 20px;
+ padding: 30px;
+ box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ }
+
+ .form-title {
+ text-align: center;
+ margin-bottom: 30px;
+ font-size: 2em;
+ background: linear-gradient(45deg, #ff6b6b, #feca57);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ background-clip: text;
+ }
+
+ .form-group {
+ margin-bottom: 25px;
+ }
+
+ .form-label {
+ display: block;
+ margin-bottom: 8px;
+ font-weight: 600;
+ color: #e8e8e8;
+ font-size: 16px;
+ }
+
+ .form-input, .form-select, .form-textarea {
+ width: 100%;
+ padding: 15px 20px;
+ border: 2px solid #374151;
+ border-radius: 15px;
+ font-size: 16px;
+ transition: all 0.3s ease;
+ background: rgba(55, 65, 81, 0.8);
+ color: #e8e8e8;
+ }
+
+ .form-input:focus, .form-select:focus, .form-textarea:focus {
+ outline: none;
+ border-color: #ff6b6b;
+ box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+ background: rgba(55, 65, 81, 0.9);
+ }
+
+ .form-textarea {
+ resize: vertical;
+ min-height: 100px;
+ }
+
+ .form-row {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 20px;
+ }
+
+ @media (max-width: 768px) {
+ .form-row {
+ grid-template-columns: 1fr;
+ }
+ }
+
+ .checkbox-group {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .checkbox-group input[type="checkbox"] {
+ width: 20px;
+ height: 20px;
+ accent-color: #ff6b6b;
+ }
+
+ .checkbox-group label {
+ margin-bottom: 0;
+ cursor: pointer;
+ }
+
+ .form-actions {
+ display: flex;
+ gap: 15px;
+ justify-content: center;
+ margin-top: 30px;
+ flex-wrap: wrap;
+ }
+
+ .btn-form {
+ padding: 15px 30px;
+ border-radius: 30px;
+ border: none;
+ font-size: 16px;
+ font-weight: 600;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ min-width: 150px;
+ }
+
+ .btn-save {
+ background: linear-gradient(45deg, #ff6b6b, #ff9a56);
+ color: white;
+ }
+
+ .btn-save:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+ }
+
+ .btn-cancel {
+ background: linear-gradient(45deg, #a4b0be, #57606f);
+ color: white;
+ }
+
+ .btn-cancel:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(164, 176, 190, 0.3);
+ }
+
+ .priority-preview, .category-preview {
+ margin-top: 10px;
+ padding: 10px;
+ border-radius: 10px;
+ font-size: 14px;
+ font-weight: 600;
+ }
+
+ .help-text {
+ font-size: 12px;
+ color: #9ca3af;
+ margin-top: 5px;
+ font-style: italic;
+ }
+</style>
+{% endblock %}
+{% block content %}
+<div class="form-card">
+ <h1 class="form-title">
+ {% if form.instance.pk %}
+ <i class="fas fa-edit"></i> Edit Todo
+ {% else %}
+ <i class="fas fa-plus-circle"></i> Create New Todo
+ {% endif %}
+ </h1>
+
+ <form method="post">
+ {% csrf_token %}
+
+ <div class="form-group">
+ <label for="{{ form.title.id_for_label }}" class="form-label">
+ <i class="fas fa-heading"></i> Title *
+ </label>
+ {{ form.title }}
+ {% if form.title.errors %}
+ <div class="error">{{ form.title.errors }}</div>
+ {% endif %}
+ </div>
+
+ <div class="form-group">
+ <label for="{{ form.description.id_for_label }}" class="form-label">
+ <i class="fas fa-align-left"></i> Description
+ </label>
+ {{ form.description }}
+ <div class="help-text">Optional detailed description of your todo</div>
+ </div>
+
+ <div class="form-row">
+ <div class="form-group">
+ <label for="{{ form.priority.id_for_label }}" class="form-label">
+ <i class="fas fa-flag"></i> Priority
+ </label>
+ {{ form.priority }}
+ <div class="priority-preview" id="priorityPreview">
+ {% if form.instance.priority %}
+ <span class="priority-badge priority-{{ form.instance.priority }}">
+ {{ form.instance.get_priority_display }}
+ </span>
+ {% endif %}
+ </div>
+ </div>
+
+ <div class="form-group">
+ <label for="{{ form.category.id_for_label }}" class="form-label">
+ <i class="fas fa-tag"></i> Category
+ </label>
+ {{ form.category }}
+ <div class="category-preview" id="categoryPreview">
+ {% if form.instance.category %}
+ <span class="category-badge category-{{ form.instance.category }}">
+ {{ form.instance.get_category_display }}
+ </span>
+ {% endif %}
+ </div>
+ </div>
+ </div>
+
+ <div class="form-group">
+ <label for="{{ form.due_date.id_for_label }}" class="form-label">
+ <i class="fas fa-calendar"></i> Due Date
+ </label>
+ {{ form.due_date }}
+ <div class="help-text">Optional deadline for this todo</div>
+ </div>
+
+ <div class="form-group">
+ <div class="checkbox-group">
+ {{ form.completed }}
+ <label for="{{ form.completed.id_for_label }}">
+ <i class="fas fa-check-circle"></i> Mark as completed
+ </label>
+ </div>
+ </div>
+
+ <div class="form-actions">
+ <button type="submit" class="btn-form btn-save">
+ <i class="fas fa-save"></i> {% if form.instance.pk %}Update Todo{% else %}Create Todo{% endif %}
+ </button>
+ <a href="{% url 'todo_list' %}" class="btn-form btn-cancel">
+ <i class="fas fa-times"></i> Cancel
+ </a>
+ </div>
+ </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+ const prioritySelect = document.getElementById('{{ form.priority.id_for_label }}');
+ const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
+ const priorityPreview = document.getElementById('priorityPreview');
+ const categoryPreview = document.getElementById('categoryPreview');
+
+ function updatePreviews() {
+ const priority = prioritySelect.value;
+ const category = categorySelect.value;
+
+ priorityPreview.innerHTML = priority ?
+ `<span class="priority-badge priority-${priority}">${prioritySelect.options[prioritySelect.selectedIndex].text}</span>` : '';
+
+ categoryPreview.innerHTML = category ?
+ `<span class="category-badge category-${category}">${categorySelect.options[categorySelect.selectedIndex].text}</span>` : '';
+ }
+
+ prioritySelect.addEventListener('change', updatePreviews);
+ categorySelect.addEventListener('change', updatePreviews);
+
+ // Initial preview update
+ updatePreviews();
+});
+</script>
+{% endblock %}

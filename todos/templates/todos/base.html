@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>{% block title %}Django Todo{% endblock %}</title>
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+ <style>
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ }
+
+ body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #533483 100%);
+ background-attachment: fixed;
+ min-height: 100vh;
+ padding: 20px;
+ color: #e8e8e8;
+ }
+
+ .container {
+ max-width: 800px;
+ margin: 0 auto;
+ background: rgba(26, 26, 46, 0.95);
+ backdrop-filter: blur(10px);
+ border-radius: 20px;
+ box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+ padding: 30px;
+ border: 2px solid rgba(255, 255, 255, 0.1);
+ }
+
+ h1 {
+ color: #e8e8e8;
+ margin-bottom: 30px;
+ text-align: center;
+ font-size: 2.5em;
+ font-weight: 700;
+ text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+ background: linear-gradient(45deg, #ff6b6b, #feca57, #ff9ff3);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ background-clip: text;
+ }
+
+ h2 {
+ color: #e8e8e8;
+ margin: 20px 0;
+ font-size: 1.8em;
+ font-weight: 600;
+ }
+
+ .btn {
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ padding: 12px 24px;
+ margin: 5px;
+ border-radius: 50px;
+ text-decoration: none;
+ border: none;
+ cursor: pointer;
+ font-size: 14px;
+ font-weight: 600;
+ transition: all 0.3s ease;
+ transform: translateY(0);
+ box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+ }
+
+ .btn:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+ }
+
+ .btn:active {
+ transform: translateY(0);
+ }
+
+ .btn-primary {
+ background: linear-gradient(45deg, #ff6b6b, #ff4757);
+ color: white;
+ }
+
+ .btn-primary:hover {
+ background: linear-gradient(45deg, #ff5252, #ff3838);
+ }
+
+ .btn-danger {
+ background: linear-gradient(45deg, #ff3838, #ff6b6b);
+ color: white;
+ }
+
+ .btn-danger:hover {
+ background: linear-gradient(45deg, #ff1e1e, #ff5252);
+ }
+
+ .btn-success {
+ background: linear-gradient(45deg, #2ed573, #7bed9f);
+ color: white;
+ }
+
+ .btn-success:hover {
+ background: linear-gradient(45deg, #26c281, #6bbf7a);
+ }
+
+ .btn-warning {
+ background: linear-gradient(45deg, #ffa726, #ffb74d);
+ color: #2d3436;
+ }
+
+ .btn-warning:hover {
+ background: linear-gradient(45deg, #fb8c00, #ff9800);
+ }
+
+ .btn-secondary {
+ background: linear-gradient(45deg, #5f27cd, #341f97);
+ color: white;
+ }
+
+ .btn-secondary:hover {
+ background: linear-gradient(45deg, #4c1d95, #2d1b69);
+ }
+
+ .form-input {
+ width: 100%;
+ padding: 15px;
+ margin-bottom: 15px;
+ border: 2px solid #374151;
+ border-radius: 15px;
+ font-size: 16px;
+ transition: all 0.3s ease;
+ background: rgba(31, 41, 55, 0.8);
+ color: #e8e8e8;
+ }
+
+ .form-input:focus {
+ outline: none;
+ border-color: #ff6b6b;
+ box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+ background: rgba(31, 41, 55, 0.9);
+ }
+
+ .form-group {
+ margin-bottom: 20px;
+ }
+
+ .form-label {
+ display: block;
+ margin-bottom: 8px;
+ font-weight: 600;
+ color: #e8e8e8;
+ font-size: 14px;
+ }
+
+ .priority-high { color: #ff3838; }
+ .priority-medium { color: #feca57; }
+ .priority-low { color: #00d2d3; }
+ .priority-urgent { color: #ff1e1e; font-weight: bold; }
+
+ .category-work { background: linear-gradient(45deg, #667eea, #764ba2); }
+ .category-personal { background: linear-gradient(45deg, #f093fb, #f5576c); }
+ .category-shopping { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+ .category-health { background: linear-gradient(45deg, #43e97b, #38f9d7); }
+ .category-other { background: linear-gradient(45deg, #fa709a, #fee140); }
+
+ .stats-card {
+ background: rgba(31, 41, 55, 0.9);
+ border-radius: 15px;
+ padding: 20px;
+ margin: 15px 0;
+ box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ }
+
+ .stats-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+ gap: 15px;
+ margin-top: 15px;
+ }
+
+ .stat-item {
+ text-align: center;
+ padding: 15px;
+ background: rgba(55, 65, 81, 0.8);
+ border-radius: 10px;
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ }
+
+ .stat-number {
+ font-size: 2em;
+ font-weight: bold;
+ color: #ff6b6b;
+ }
+
+ .stat-label {
+ font-size: 0.9em;
+ color: #9ca3af;
+ margin-top: 5px;
+ }
+
+ .search-filter {
+ background: rgba(31, 41, 55, 0.9);
+ border-radius: 15px;
+ padding: 20px;
+ margin: 20px 0;
+ box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+ }
+
+ .filter-buttons {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 10px;
+ margin-top: 15px;
+ }
+
+ .filter-btn {
+ padding: 8px 16px;
+ border-radius: 20px;
+ border: none;
+ background: #ddd;
+ color: #666;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ font-size: 12px;
+ }
+
+ .filter-btn.active {
+ background: linear-gradient(45deg, #ff6b6b, #ff9a56);
+ color: white;
+ }
+
+ .filter-btn:hover {
+ transform: translateY(-1px);
+ box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+ }
+
+ @media (max-width: 768px) {
+ .container {
+ padding: 20px;
+ }
+
+ h1 {
+ font-size: 2em;
+ }
+
+ .stats-grid {
+ grid-template-columns: repeat(2, 1fr);
+ }
+
+ .btn {
+ padding: 10px 20px;
+ font-size: 13px;
+ }
+ }
+
+ .fade-in {
+ animation: fadeIn 0.5s ease-in;
+ }
+
+ @keyframes fadeIn {
+ from { opacity: 0; transform: translateY(20px); }
+ to { opacity: 1; transform: translateY(0); }
+ }
+
+ .pulse {
+ animation: pulse 2s infinite;
+ }
+
+ @keyframes pulse {
+ 0% { transform: scale(1); }
+ 50% { transform: scale(1.05); }
+ 100% { transform: scale(1); }
+ }
+ </style>
+ {% block extra_css %}{% endblock %}
+</head>
+<body>
+ <div class="container fade-in">
+ {% block content %}{% endblock %}
+ </div>
+</body>
+</html>
